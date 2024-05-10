@@ -4,10 +4,12 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
 
 import com.devgalan.tucofradia.models.User;
 import com.devgalan.tucofradia.repositories.UserRepository;
 
+@Service
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
@@ -35,7 +37,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Optional<User> login(String email, String password) {
-        return userRepository.findByEmailAndPassword(email, passwordEncoder.encode(password));
+        Optional<User> user = userRepository.findByEmail(email);
+        if (user.isPresent() && passwordEncoder.matches(password, user.get().getPassword())) {
+            return user;
+        }
+        return Optional.empty();
     }
 
     @Override

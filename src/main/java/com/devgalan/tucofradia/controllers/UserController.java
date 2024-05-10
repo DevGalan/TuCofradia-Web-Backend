@@ -24,7 +24,7 @@ import com.devgalan.tucofradia.models.User;
 import com.devgalan.tucofradia.services.user.UserService;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("api/users")
 public class UserController {
 
     private final UserService userService;
@@ -76,7 +76,7 @@ public class UserController {
         return searchedUsers;
     }
 
-    @GetMapping("login")
+    @PostMapping("login")
     public ResponseEntity<NoPasswordUserDto> login(@RequestBody LoginUserDto loginUserDto) {
 
         Optional<User> user = userService.login(loginUserDto.getEmail(), loginUserDto.getPassword());
@@ -133,6 +133,9 @@ public class UserController {
     public ResponseEntity<String> deleteUser(@PathVariable Long id) {
 
         if (userService.existsById(id)) {
+            // TODO
+            // Eliminar Guilds, pueden ser dadas a otro user
+            // Dar admin del server a un random, si no hay mas users, eliminar server, puede ser dado a otro user
             userService.deleteUser(id);
             return ResponseEntity.ok("User deleted");
         } 

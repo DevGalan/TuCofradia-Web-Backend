@@ -12,12 +12,12 @@ import com.devgalan.tucofradia.models.User;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
     
-    @Query(nativeQuery = true, value = "SELECT * FROM User ORDER BY RAND() LIMIT :limit")
+    @Query(nativeQuery = true, value = "SELECT * FROM USERS ORDER BY RANDOM() LIMIT :limit")
     List<User> getRandomUsers(Integer limit);
 
     List<User> findByUsername(String username);
 
-    Optional<User> findByEmailAndPassword(String email, String password);
+    Optional<User> findByEmail(String email);
 
     Boolean existsByEmail(String email);
 
