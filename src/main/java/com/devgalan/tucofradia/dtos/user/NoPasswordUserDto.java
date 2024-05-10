@@ -1,4 +1,4 @@
-package com.devgalan.tucofradia.dtos;
+package com.devgalan.tucofradia.dtos.user;
 
 import java.sql.Date;
 

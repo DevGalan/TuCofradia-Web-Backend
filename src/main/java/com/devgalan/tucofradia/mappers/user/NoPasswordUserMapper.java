@@ -1,10 +1,10 @@
-package com.devgalan.tucofradia.mappers;
+package com.devgalan.tucofradia.mappers.user;
 
 import java.util.List;
 
 import org.springframework.stereotype.Component;
 
-import com.devgalan.tucofradia.dtos.NoPasswordUserDto;
+import com.devgalan.tucofradia.dtos.user.NoPasswordUserDto;
 import com.devgalan.tucofradia.models.User;
 
 @Component

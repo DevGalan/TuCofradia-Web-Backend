@@ -15,9 +15,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.devgalan.tucofradia.dtos.LoginUserDto;
-import com.devgalan.tucofradia.dtos.NoPasswordUserDto;
-import com.devgalan.tucofradia.mappers.NoPasswordUserMapper;
+import com.devgalan.tucofradia.dtos.user.LoginUserDto;
+import com.devgalan.tucofradia.dtos.user.NoPasswordUserDto;
+import com.devgalan.tucofradia.mappers.user.NoPasswordUserMapper;
 import com.devgalan.tucofradia.models.User;
 import com.devgalan.tucofradia.services.user.UserService;
 
