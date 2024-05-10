@@ -4,9 +4,13 @@ import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
-@Table(name = "UPLOADED_IMAGES")
+@Table(name = "UPLOADED_IMAGES", 
+    uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "name"}))
 public class UploadedImage {
 
     @Id
@@ -18,5 +22,9 @@ public class UploadedImage {
 
     @Column(nullable = false)
     private String path;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User userId;
     
 }
