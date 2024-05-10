@@ -17,7 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.devgalan.tucofradia.dtos.user.LoginUserDto;
 import com.devgalan.tucofradia.dtos.user.NoPasswordUserDto;
+import com.devgalan.tucofradia.dtos.user.RegisterUserDto;
 import com.devgalan.tucofradia.mappers.user.NoPasswordUserMapper;
+import com.devgalan.tucofradia.mappers.user.RegisterUserMapper;
 import com.devgalan.tucofradia.models.User;
 import com.devgalan.tucofradia.services.user.UserService;
 
@@ -29,9 +31,13 @@ public class UserController {
     
     private final NoPasswordUserMapper noPasswordUserMapper;
 
-    public UserController(UserService userService, NoPasswordUserMapper noPasswordUserMapper) {
+    private final RegisterUserMapper registerUserMapper;
+
+    public UserController(UserService userService, NoPasswordUserMapper noPasswordUserMapper, 
+                            RegisterUserMapper registerUserMapper) {
         this.userService = userService;
         this.noPasswordUserMapper = noPasswordUserMapper;
+        this.registerUserMapper = registerUserMapper;
     }
 
     @GetMapping("random")
@@ -84,15 +90,13 @@ public class UserController {
     }
 
     @PostMapping("register")
-    public ResponseEntity<NoPasswordUserDto> register(@RequestBody User user) {
+    public ResponseEntity<NoPasswordUserDto> register(@RequestBody RegisterUserDto registerUser) {
         
-        if (userService.existsByEmail(user.getEmail())) {
+        if (userService.existsByEmail(registerUser.getEmail())) {
             return ResponseEntity.badRequest().build();
         }
 
-        if (user.getId() != null && userService.existsById(user.getId())) {
-            return ResponseEntity.badRequest().build();
-        }
+        User user = registerUserMapper.toEntity(registerUser);
 
         user.setRegisterDate(new Date(System.currentTimeMillis()));
         user.setLastLogin(new Date(System.currentTimeMillis()));
