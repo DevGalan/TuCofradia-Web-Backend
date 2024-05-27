@@ -15,7 +15,6 @@ public class RegisterUserMapper {
         user.setUsername(registerUser.getUsername());
         user.setEmail(registerUser.getEmail());
         user.setPassword(registerUser.getPassword());
-        user.setProfileMessage(registerUser.getProfileMessage());
         return user;
     }
 

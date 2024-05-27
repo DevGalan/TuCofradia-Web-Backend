@@ -1,4 +1,4 @@
-package com.devgalan.tucofradia.dtos.user;
+package com.devgalan.tucofradia.dtos.server;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,11 +7,9 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class RegisterUserDto {
+public class JoinServerDto {
 
-    private String username;
-
-    private String email;
+    private String code;
 
     private String password;
 

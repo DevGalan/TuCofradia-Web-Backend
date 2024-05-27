@@ -2,8 +2,6 @@ package com.devgalan.tucofradia.dtos.user;
 
 import java.sql.Date;
 
-import com.devgalan.tucofradia.models.UploadedImage;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -25,6 +23,6 @@ public class NoPasswordUserDto {
 
     private Date registerDate;
 
-    private UploadedImage profilePicture;
+    private String profilePicture;
 
 }

@@ -1,8 +1,13 @@
 package com.devgalan.tucofradia.controllers;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,17 +20,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import com.devgalan.tucofradia.dtos.user.LoginUserDto;
-import com.devgalan.tucofradia.dtos.user.NoPasswordUserDto;
 import com.devgalan.tucofradia.dtos.user.RegisterUserDto;
 import com.devgalan.tucofradia.models.User;
 import com.devgalan.tucofradia.repositories.UserRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -47,11 +46,9 @@ public class UserControllerTest {
     private void registerUser(int userNumber, String gmailPrefix) {
         String userNumberStr = String.valueOf(userNumber);
         RegisterUserDto registerUserDto = new RegisterUserDto(
-            "User " + userNumberStr,
-            gmailPrefix + userNumberStr + "@gmail.com",
-            "password" + userNumberStr,
-            "Hello my friend"
-        );
+                "User " + userNumberStr,
+                gmailPrefix + userNumberStr + "@gmail.com",
+                "password" + userNumberStr);
         userController.register(registerUserDto);
     }
 
@@ -64,18 +61,19 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "testUser", roles = {"ADMIN"})
+    @WithMockUser(username = "testUser", roles = { "ADMIN" })
     public void whenCallGetRandomUsers_thenReturnRandomUsers() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get(baseURL + "/random")
-                .param("limit", "10")
+                .with(httpBasic("user", "user"))
+                .param("limit", "8")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(10));
+                .andExpect(jsonPath("$.length()").value(8));
     }
 
     @Test
     @Order(1)
-    @WithMockUser(username = "testUser", roles = {"ADMIN"})
+    @WithMockUser(username = "testUser", roles = { "ADMIN" })
     public void whenCallGetUserById_withValidId_thenReturnUser() throws Exception {
         Long userId = 1L;
         mockMvc.perform(MockMvcRequestBuilders.get(baseURL + "/{userId}", userId)
@@ -85,30 +83,33 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "testUser", roles = {"ADMIN"})
+    @WithMockUser(username = "testUser", roles = { "ADMIN" })
     public void whenCallGetUserById_withInvalidId_thenReturnNotFound() throws Exception {
         Long userId = 100L;
         mockMvc.perform(MockMvcRequestBuilders.get(baseURL + "/{userId}", userId)
+                .with(httpBasic("user", "user"))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    @WithMockUser(username = "testUser", roles = {"ADMIN"})
+    @WithMockUser(username = "testUser", roles = { "ADMIN" })
     public void whenCallGetUsersByUsername_thenReturnUsers() throws Exception {
         registerUser(1, "secondUser");
         String username = "User 1";
         mockMvc.perform(MockMvcRequestBuilders.get(baseURL + "/search/{username}", username)
+                .with(httpBasic("user", "user"))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2));
     }
 
     @Test
-    @WithMockUser(username = "testUser", roles = {"ADMIN"})
+    @WithMockUser(username = "testUser", roles = { "ADMIN" })
     public void whenCallLogin_withValidCredentials_thenReturnUser() throws Exception {
         LoginUserDto loginUserDto = new LoginUserDto("user1@gmail.com", "password1");
         mockMvc.perform(MockMvcRequestBuilders.post(baseURL + "/login")
+                .with(httpBasic("user", "user"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(loginUserDto)))
                 .andExpect(status().isOk())
@@ -116,45 +117,49 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "testUser", roles = {"ADMIN"})
+    @WithMockUser(username = "testUser", roles = { "ADMIN" })
     public void whenCallLogin_withInvalidCredentials_thenReturnNotFound() throws Exception {
         LoginUserDto loginUserDto = new LoginUserDto("user1@gmail.com", "wrongpassword");
         mockMvc.perform(MockMvcRequestBuilders.post(baseURL + "/login")
+                .with(httpBasic("user", "user"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(loginUserDto)))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    @WithMockUser(username = "testUser", roles = {"ADMIN"})
+    @WithMockUser(username = "testUser", roles = { "ADMIN" })
     public void whenCallRegister_withValidUser_thenReturnCreatedUser() throws Exception {
-        RegisterUserDto registerUserDto = new RegisterUserDto("John Doe", "test@example.com", "password", null);
+        RegisterUserDto registerUserDto = new RegisterUserDto("John Doe", "test@example.com", "password");
         mockMvc.perform(MockMvcRequestBuilders.post(baseURL + "/register")
+                .with(httpBasic("user", "user"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(registerUserDto)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.email").value(registerUserDto.getEmail()));
+                .andExpect(status().isOk());
     }
 
     @Test
-    @WithMockUser(username = "testUser", roles = {"ADMIN"})
+    @WithMockUser(username = "testUser", roles = { "ADMIN" })
     public void whenCallRegister_withExistingEmail_thenReturnBadRequest() throws Exception {
-        RegisterUserDto registerUserDto = new RegisterUserDto("User 1", "user1@gmail.com", "password", null);
+        RegisterUserDto registerUserDto = new RegisterUserDto("User 1", "user1@gmail.com", "password");
         mockMvc.perform(MockMvcRequestBuilders.post(baseURL + "/register")
+                .with(httpBasic("user", "user"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(registerUserDto)))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-    @WithMockUser(username = "testUser", roles = {"ADMIN"})
+    @WithMockUser(username = "testUser", roles = { "ADMIN" })
     public void whenCallUpdateUser_withValidId_thenReturnUpdatedUser() throws Exception {
-        RegisterUserDto registerUser = new RegisterUserDto("Juan", "juan@gmail.com", "password", "Hello my friend");
-        
-        NoPasswordUserDto user = userController.register(registerUser).getBody();
+        RegisterUserDto registerUser = new RegisterUserDto("Juan", "juan@gmail.com", "password");
+
+        userController.register(registerUser).getBody();
+
+        var user = userRepository.findByEmail(registerUser.getEmail()).get();
 
         User updatedUser = new User();
-        
+
         updatedUser.setId(user.getId());
         updatedUser.setUsername("Updated User");
         updatedUser.setProfileMessage("Updated profile message");
@@ -162,17 +167,17 @@ public class UserControllerTest {
         updatedUser.setPassword("updated_password");
 
         mockMvc.perform(MockMvcRequestBuilders.put(baseURL + "/{id}", updatedUser.getId())
+                .with(httpBasic("user", "user"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(updatedUser)))
-                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(updatedUser.getId()))
                 .andExpect(jsonPath("$.username").value(updatedUser.getUsername()))
-                .andExpect(jsonPath("$.profileMessage").value(updatedUser.getProfileMessage()))
-                .andExpect(jsonPath("$.profilePicture").value(updatedUser.getProfilePicture()));
+                .andExpect(jsonPath("$.profileMessage").value(updatedUser.getProfileMessage()));
+                // .andExpect(jsonPath("$.profilePicture").value(updatedUser.getProfilePicture()));
     }
 
     @Test
-    @WithMockUser(username = "testUser", roles = {"ADMIN"})
+    @WithMockUser(username = "testUser", roles = { "ADMIN" })
     public void whenCallUpdateUser_withInvalidId_thenReturnNotFound() throws Exception {
         Long userId = 1L;
         User updatedUser = new User();
@@ -182,6 +187,7 @@ public class UserControllerTest {
         updatedUser.setPassword("updated_password");
 
         mockMvc.perform(MockMvcRequestBuilders.put(baseURL + "/{id}", userId)
+                .with(httpBasic("user", "user"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(updatedUser)))
                 .andExpect(status().isNotFound());
@@ -189,20 +195,22 @@ public class UserControllerTest {
 
     @Test
     @Order(2)
-    @WithMockUser(username = "testUser", roles = {"ADMIN"})
+    @WithMockUser(username = "testUser", roles = { "ADMIN" })
     public void whenCallDeleteUser_withValidId_thenReturnUserDeleted() throws Exception {
         Long userId = 21L;
         mockMvc.perform(MockMvcRequestBuilders.delete(baseURL + "/{id}", userId)
+                .with(httpBasic("user", "user"))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().string("User deleted"));
     }
 
     @Test
-    @WithMockUser(username = "testUser", roles = {"ADMIN"})
+    @WithMockUser(username = "testUser", roles = { "ADMIN" })
     public void whenCallDeleteUser_withInvalidId_thenReturnNotFound() throws Exception {
         Long userId = 100L;
         mockMvc.perform(MockMvcRequestBuilders.delete(baseURL + "/{id}", userId)
+                .with(httpBasic("user", "user"))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }

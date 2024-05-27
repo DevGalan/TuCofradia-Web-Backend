@@ -3,6 +3,8 @@ package com.devgalan.tucofradia.controllers;
 import java.sql.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -22,6 +24,7 @@ import com.devgalan.tucofradia.mappers.user.NoPasswordUserMapper;
 import com.devgalan.tucofradia.mappers.user.RegisterUserMapper;
 import com.devgalan.tucofradia.models.User;
 import com.devgalan.tucofradia.services.user.UserService;
+import com.devgalan.tucofradia.tool.ResponseWithMessage;
 
 @RestController
 @RequestMapping("api/users")
@@ -90,10 +93,18 @@ public class UserController {
     }
 
     @PostMapping("register")
-    public ResponseEntity<NoPasswordUserDto> register(@RequestBody RegisterUserDto registerUser) {
+    public ResponseEntity<ResponseWithMessage<NoPasswordUserDto>> register(@RequestBody RegisterUserDto registerUser) {
+
+        if (!isValidEmail(registerUser.getEmail())) {
+            return ResponseEntity.badRequest().body(new ResponseWithMessage<NoPasswordUserDto>("Correo electrónico inválido"));
+        }
+
+        if (registerUser.getPassword().length() < 8) {
+            return ResponseEntity.badRequest().body(new ResponseWithMessage<NoPasswordUserDto>("La contraseña debe tener al menos 8 caracteres"));
+        }
         
         if (userService.existsByEmail(registerUser.getEmail())) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(new ResponseWithMessage<NoPasswordUserDto>("El correo electrónico ya está en uso"));
         }
 
         User user = registerUserMapper.toEntity(registerUser);
@@ -101,9 +112,14 @@ public class UserController {
         user.setRegisterDate(new Date(System.currentTimeMillis()));
         user.setLastLogin(new Date(System.currentTimeMillis()));
 
-        User createdUser = userService.saveUser(user);
+        return ResponseEntity.ok(new ResponseWithMessage<NoPasswordUserDto>("Usuario registrado", noPasswordUserMapper.toDto(userService.saveUser(user))));
+    }
 
-        return ResponseEntity.ok(noPasswordUserMapper.toDto(createdUser));
+    public boolean isValidEmail(String email) {
+        String emailRegex = "^[A-Za-z0-9+_.-]+@(.+)$";
+        Pattern pattern = Pattern.compile(emailRegex);
+        Matcher matcher = pattern.matcher(email);
+        return matcher.matches();
     }
     
     @PutMapping("{id}")
