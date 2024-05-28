@@ -23,6 +23,6 @@ public class NoPasswordUserDto {
 
     private Date registerDate;
 
-    private String profilePicture;
+    private String profilePicturePath;
 
 }

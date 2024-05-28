@@ -129,12 +129,15 @@ public class UserController {
 
         if (dataBaseUser.isPresent()) {
 
-            dataBaseUser.get().setUsername(user.getUsername());
-            dataBaseUser.get().setProfileMessage(user.getProfileMessage());
-            dataBaseUser.get().setProfilePicture(user.getProfilePicture());
-            dataBaseUser.get().setPassword(user.getPassword());
+            if (user.getUsername() == null && user.getProfileMessage() == null && user.getPassword() == null) {
+                return ResponseEntity.badRequest().build();
+            }
 
-            dataBaseUser.get().setLastLogin(new Date(System.currentTimeMillis()));
+            if (user.getUsername() != null) dataBaseUser.get().setUsername(user.getUsername());
+            if (user.getProfileMessage() != null) dataBaseUser.get().setProfileMessage(user.getProfileMessage());
+            if (user.getPassword() != null) dataBaseUser.get().setPassword(user.getPassword());
+
+            dataBaseUser.get().setLastLogin(new Date(System.currentTimeMillis())); // TODO: Eliminar last login o hacer metodo login sin contraseña
 
             User updatedUser = userService.saveUser(dataBaseUser.get());
 
