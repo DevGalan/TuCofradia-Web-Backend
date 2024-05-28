@@ -31,6 +31,9 @@ public class UploadedImage {
     @Column(nullable = false)
     private String path;
 
+    @Column(nullable = false)
+    private String onlinePath;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User userId;
