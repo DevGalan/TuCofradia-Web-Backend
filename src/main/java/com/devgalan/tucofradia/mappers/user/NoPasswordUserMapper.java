@@ -11,9 +11,9 @@ import com.devgalan.tucofradia.models.User;
 public class NoPasswordUserMapper {
 
     public NoPasswordUserDto toDto(User user) {
-        return new NoPasswordUserDto(user.getId(), user.getUsername(), user.getEmail(), 
-                                    user.getProfileMessage(), user.getLastLogin(), user.getRegisterDate(), 
-                                    user.getProfilePicture() == null ? null : user.getProfilePicture().getOnlinePath());
+        return new NoPasswordUserDto(user.getId(), user.getUsername(), user.getEmail(),
+                user.getProfileMessage(), user.getLastLogin(), user.getRegisterDate(),
+                user.getProfilePicture() != null ? user.getProfilePicture().getOnlinePath() : null);
     }
 
     public List<NoPasswordUserDto> toDto(List<User> users) {

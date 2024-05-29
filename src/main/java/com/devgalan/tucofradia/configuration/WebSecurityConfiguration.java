@@ -25,6 +25,7 @@ public class WebSecurityConfiguration {
                 .authorizeHttpRequests((requests) -> requests
                         // .requestMatchers("/api/**").permitAll() // auth/** TODO: Cambiar
                         .requestMatchers("/swagger-ui/**").permitAll()
+                        .requestMatchers("/uploaded_images/profile_pics/**").permitAll()
                         .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
                 .logout((logout) -> logout.permitAll());

@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.devgalan.tucofradia.models.UploadedImage;
 import com.devgalan.tucofradia.models.User;
 import com.devgalan.tucofradia.repositories.UserRepository;
 
@@ -68,6 +69,16 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
+    }
+
+    @Override
+    public User updateUserImage(Long userId, UploadedImage image) {
+        Optional<User> user = userRepository.findById(userId);
+        if (user.isPresent()) {
+            user.get().setProfilePicture(image);
+            return userRepository.save(user.get());
+        }
+        return null;
     }
 
 }

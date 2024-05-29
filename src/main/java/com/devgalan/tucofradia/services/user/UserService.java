@@ -3,6 +3,7 @@ package com.devgalan.tucofradia.services.user;
 import java.util.List;
 import java.util.Optional;
 
+import com.devgalan.tucofradia.models.UploadedImage;
 import com.devgalan.tucofradia.models.User;
 
 public interface UserService {
@@ -22,6 +23,8 @@ public interface UserService {
     User saveUser(User user);
 
     User updateUser(User user);
+    
+    User updateUserImage(Long userId, UploadedImage image);
 
     void deleteUser(Long id);
 

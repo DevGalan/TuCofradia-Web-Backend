@@ -3,9 +3,11 @@ package com.devgalan.tucofradia.controllers;
 import java.sql.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.devgalan.tucofradia.dtos.user.LoginUserDto;
 import com.devgalan.tucofradia.dtos.user.NoPasswordUserDto;
@@ -23,7 +26,10 @@ import com.devgalan.tucofradia.dtos.user.RegisterUserDto;
 import com.devgalan.tucofradia.dtos.user.UpdateUserDto;
 import com.devgalan.tucofradia.mappers.user.NoPasswordUserMapper;
 import com.devgalan.tucofradia.mappers.user.RegisterUserMapper;
+import com.devgalan.tucofradia.models.UploadedImage;
 import com.devgalan.tucofradia.models.User;
+import com.devgalan.tucofradia.repositories.UploadedImageRepository;
+import com.devgalan.tucofradia.services.image.ImageUploaderService;
 import com.devgalan.tucofradia.services.user.UserService;
 import com.devgalan.tucofradia.tool.ResponseWithMessage;
 
@@ -32,16 +38,28 @@ import com.devgalan.tucofradia.tool.ResponseWithMessage;
 public class UserController {
 
     private final UserService userService;
-    
+
     private final NoPasswordUserMapper noPasswordUserMapper;
 
     private final RegisterUserMapper registerUserMapper;
 
-    public UserController(UserService userService, NoPasswordUserMapper noPasswordUserMapper, 
-                            RegisterUserMapper registerUserMapper) {
+    private final ImageUploaderService imageUploaderService;
+
+    private final UploadedImageRepository uploadedImageRepository;
+
+    private final String IMAGES_PATH = "uploaded_images/profile_pics/";
+
+    @Value("${server.url}")
+    private String SERVER_URL;
+
+    public UserController(UserService userService, NoPasswordUserMapper noPasswordUserMapper,
+            RegisterUserMapper registerUserMapper, ImageUploaderService imageUploaderService,
+            UploadedImageRepository uploadedImageRepository) {
         this.userService = userService;
         this.noPasswordUserMapper = noPasswordUserMapper;
         this.registerUserMapper = registerUserMapper;
+        this.imageUploaderService = imageUploaderService;
+        this.uploadedImageRepository = uploadedImageRepository;
     }
 
     @GetMapping("random")
@@ -49,8 +67,7 @@ public class UserController {
 
         if (limit < 1) {
             limit = 1;
-        } 
-        else if (limit > 30) {
+        } else if (limit > 30) {
             limit = 30;
         }
 
@@ -66,8 +83,7 @@ public class UserController {
 
         if (user.isPresent()) {
             return ResponseEntity.ok(noPasswordUserMapper.toDto(user.get()));
-        } 
-        else {
+        } else {
             return ResponseEntity.notFound().build();
         }
     }
@@ -83,17 +99,17 @@ public class UserController {
     @PostMapping("login")
     public ResponseEntity<NoPasswordUserDto> login(@RequestBody LoginUserDto loginUserDto) {
 
-        Optional<User> user = userService.login(loginUserDto.getEmail().toLowerCase().trim(), loginUserDto.getPassword());
+        Optional<User> user = userService.login(loginUserDto.getEmail().toLowerCase().trim(),
+                loginUserDto.getPassword());
 
-        user.ifPresent(u -> { 
+        user.ifPresent(u -> {
             u.setLastLogin(new Date(System.currentTimeMillis()));
             userService.updateUser(u);
         });
 
         if (user.isPresent()) {
             return ResponseEntity.ok(noPasswordUserMapper.toDto(user.get()));
-        } 
-        else {
+        } else {
             return ResponseEntity.notFound().build();
         }
     }
@@ -104,15 +120,18 @@ public class UserController {
         registerUser.setEmail(registerUser.getEmail().toLowerCase().trim());
 
         if (!isValidEmail(registerUser.getEmail())) {
-            return ResponseEntity.badRequest().body(new ResponseWithMessage<NoPasswordUserDto>("Correo electrónico inválido"));
+            return ResponseEntity.badRequest()
+                    .body(new ResponseWithMessage<NoPasswordUserDto>("Correo electrónico inválido"));
         }
 
         if (registerUser.getPassword().length() < 8) {
-            return ResponseEntity.badRequest().body(new ResponseWithMessage<NoPasswordUserDto>("La contraseña debe tener al menos 8 caracteres"));
+            return ResponseEntity.badRequest()
+                    .body(new ResponseWithMessage<NoPasswordUserDto>("La contraseña debe tener al menos 8 caracteres"));
         }
-        
+
         if (userService.existsByEmail(registerUser.getEmail())) {
-            return ResponseEntity.badRequest().body(new ResponseWithMessage<NoPasswordUserDto>("El correo electrónico ya está en uso"));
+            return ResponseEntity.badRequest()
+                    .body(new ResponseWithMessage<NoPasswordUserDto>("El correo electrónico ya está en uso"));
         }
 
         User user = registerUserMapper.toEntity(registerUser);
@@ -120,7 +139,8 @@ public class UserController {
         user.setRegisterDate(new Date(System.currentTimeMillis()));
         user.setLastLogin(new Date(System.currentTimeMillis()));
 
-        return ResponseEntity.ok(new ResponseWithMessage<NoPasswordUserDto>("Usuario registrado", noPasswordUserMapper.toDto(userService.saveUser(user))));
+        return ResponseEntity.ok(new ResponseWithMessage<NoPasswordUserDto>("Usuario registrado",
+                noPasswordUserMapper.toDto(userService.saveUser(user))));
     }
 
     public boolean isValidEmail(String email) {
@@ -129,7 +149,49 @@ public class UserController {
         Matcher matcher = pattern.matcher(email);
         return matcher.matches();
     }
-    
+
+    @PostMapping("{id}/image")
+    public ResponseEntity<NoPasswordUserDto> updateUserImage(@PathVariable Long id, @RequestBody MultipartFile image) {
+
+        var dataBaseUser = userService.getUserById(id);
+
+        if (dataBaseUser.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        if (image == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        if (dataBaseUser.get().getProfilePicture() != null) {
+            imageUploaderService.deleteImage(dataBaseUser.get().getProfilePicture().getPath() + dataBaseUser.get().getProfilePicture().getName());
+        }
+
+        var random = new Random();
+        int randomNumber;
+        String filename = image.getOriginalFilename();
+        System.out.println(filename);
+        int lastIndexOfDot = filename.lastIndexOf(".");
+        String imageExtension = ".jpg";
+
+        if (lastIndexOfDot != -1) {
+            imageExtension = filename.substring(lastIndexOfDot);
+        }
+        do {
+            randomNumber = random.nextInt();
+        } while (uploadedImageRepository.existsByName(randomNumber + imageExtension));
+
+        UploadedImage uploadedImage = new UploadedImage();
+        String imageName = randomNumber + imageExtension;
+        uploadedImage.setName(imageName);
+        String imagePath = imageUploaderService.uploadImage(image, IMAGES_PATH, imageName);
+        uploadedImage.setPath(imagePath);
+        uploadedImage.setOnlinePath(SERVER_URL + IMAGES_PATH + imageName);
+        uploadedImage.setUserId(dataBaseUser.get().getId());
+        var user = userService.updateUserImage(id, uploadedImage);
+        return ResponseEntity.ok(noPasswordUserMapper.toDto(user));
+    }
+
     @PutMapping("{id}")
     public ResponseEntity<NoPasswordUserDto> updateUser(@PathVariable Long id, @RequestBody UpdateUserDto user) {
 
@@ -141,16 +203,39 @@ public class UserController {
                 return ResponseEntity.badRequest().build();
             }
 
-            if (user.getUsername() != null) dataBaseUser.get().setUsername(user.getUsername());
-            if (user.getProfileMessage() != null) dataBaseUser.get().setProfileMessage(user.getProfileMessage());
+            if (user.getUsername() != null)
+                dataBaseUser.get().setUsername(user.getUsername());
+            if (user.getProfileMessage() != null)
+                dataBaseUser.get().setProfileMessage(user.getProfileMessage());
 
             User updatedUser = userService.updateUser(dataBaseUser.get());
 
             return ResponseEntity.ok(noPasswordUserMapper.toDto(updatedUser));
-        } 
-        else {
+        } else {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @DeleteMapping("{id}/image")
+    public ResponseEntity<NoPasswordUserDto> deleteUserImage(@PathVariable Long id) {
+
+        var dataBaseUser = userService.getUserById(id);
+
+        if (dataBaseUser.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        if (dataBaseUser.get().getProfilePicture() == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        dataBaseUser.get().setProfilePicture(null);
+
+        imageUploaderService.deleteImage(dataBaseUser.get().getProfilePicture().getFullPath());
+
+        var updatedUser = userService.updateUser(dataBaseUser.get());
+
+        return ResponseEntity.ok(noPasswordUserMapper.toDto(updatedUser));
     }
 
     @DeleteMapping("{id}")
@@ -159,11 +244,11 @@ public class UserController {
         if (userService.existsById(id)) {
             // TODO
             // Eliminar Guilds, pueden ser dadas a otro user
-            // Dar admin del server a un random, si no hay mas users, eliminar server, puede ser dado a otro user
+            // Dar admin del server a un random, si no hay mas users, eliminar server, puede
+            // ser dado a otro user
             userService.deleteUser(id);
             return ResponseEntity.ok("User deleted");
-        } 
-        else {
+        } else {
             return ResponseEntity.notFound().build();
         }
     }

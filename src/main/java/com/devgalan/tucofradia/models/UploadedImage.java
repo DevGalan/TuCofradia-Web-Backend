@@ -6,7 +6,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
@@ -17,8 +16,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "UPLOADED_IMAGES", 
-    uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "name"}))
+@Table(name = "UPLOADED_IMAGES", uniqueConstraints = @UniqueConstraint(columnNames = { "user_id", "name" }))
 public class UploadedImage {
 
     @Id
@@ -34,8 +32,11 @@ public class UploadedImage {
     @Column(nullable = false)
     private String onlinePath;
 
-    @ManyToOne
     @JoinColumn(name = "user_id")
-    private User userId;
-    
+    private Long userId;
+
+    public String getFullPath() {
+        return path + name;
+    }
+
 }
