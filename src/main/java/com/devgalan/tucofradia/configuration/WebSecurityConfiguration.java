@@ -23,9 +23,8 @@ public class WebSecurityConfiguration {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests((requests) -> requests
-                        // .requestMatchers("/api/**").permitAll() // auth/** TODO: Cambiar
                         .requestMatchers("/swagger-ui/**").permitAll()
-                        .requestMatchers("/uploaded_images/profile_pics/**").permitAll()
+                        .requestMatchers("/uploaded_images/**").permitAll()
                         .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
                 .logout((logout) -> logout.permitAll());

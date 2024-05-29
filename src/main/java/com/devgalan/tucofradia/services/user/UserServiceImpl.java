@@ -71,14 +71,4 @@ public class UserServiceImpl implements UserService {
         userRepository.deleteById(id);
     }
 
-    @Override
-    public User updateUserImage(Long userId, UploadedImage image) {
-        Optional<User> user = userRepository.findById(userId);
-        if (user.isPresent()) {
-            user.get().setProfilePicture(image);
-            return userRepository.save(user.get());
-        }
-        return null;
-    }
-
 }

@@ -164,13 +164,12 @@ public class UserController {
         }
 
         if (dataBaseUser.get().getProfilePicture() != null) {
-            imageUploaderService.deleteImage(dataBaseUser.get().getProfilePicture().getPath() + dataBaseUser.get().getProfilePicture().getName());
+            imageUploaderService.deleteImage(dataBaseUser.get().getProfilePicture().getFullPath());
         }
 
         var random = new Random();
         int randomNumber;
         String filename = image.getOriginalFilename();
-        System.out.println(filename);
         int lastIndexOfDot = filename.lastIndexOf(".");
         String imageExtension = ".jpg";
 
@@ -188,7 +187,8 @@ public class UserController {
         uploadedImage.setPath(imagePath);
         uploadedImage.setOnlinePath(SERVER_URL + IMAGES_PATH + imageName);
         uploadedImage.setUserId(dataBaseUser.get().getId());
-        var user = userService.updateUserImage(id, uploadedImage);
+        dataBaseUser.get().setProfilePicture(uploadedImage);
+        var user = userService.updateUser(dataBaseUser.get());
         return ResponseEntity.ok(noPasswordUserMapper.toDto(user));
     }
 

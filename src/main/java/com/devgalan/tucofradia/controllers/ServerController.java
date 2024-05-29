@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.devgalan.tucofradia.dtos.server.CreateServerDto;
 import com.devgalan.tucofradia.dtos.server.JoinServerDto;
+import com.devgalan.tucofradia.mappers.server.CreateServerMapper;
 import com.devgalan.tucofradia.models.Server;
 import com.devgalan.tucofradia.models.Survey;
 import com.devgalan.tucofradia.services.server.ServerService;
@@ -22,80 +24,82 @@ import com.devgalan.tucofradia.services.survey.SurveyService;
 @RequestMapping("api/servers")
 public class ServerController {
 
-    // private final ServerService serverService;
+    private final ServerService serverService;
 
-    // private final SurveyService surveyService;
+    private final SurveyService surveyService;
 
-    // public ServerController(ServerService serverService, SurveyService surveyService) {
-    //     this.serverService = serverService;
-    //     this.surveyService = surveyService;
-    // }
+    private final CreateServerMapper createServerMapper;
 
-    // @GetMapping("random")
-    // public List<Server> getRandomServers(@RequestParam(required = false, defaultValue = "15") Integer limit) {
+    public ServerController(ServerService serverService, SurveyService surveyService,
+            CreateServerMapper createServerMapper) {
+        this.serverService = serverService;
+        this.surveyService = surveyService;
+        this.createServerMapper = createServerMapper;
+    }
 
-    //     limit = fixLimitIfNeeded(limit);
+    @GetMapping("random")
+    public List<Server> getRandomServers(@RequestParam(required = false, defaultValue = "15") Integer limit) {
 
-    //     List<Server> randomServers = serverService.getRandomServers(limit);
+        limit = fixLimitIfNeeded(limit);
 
-    //     return randomServers;
-    // }
+        List<Server> randomServers = serverService.getRandomServers(limit);
 
-    // @GetMapping("random/public")
-    // public List<Server> getRandomPublicServers(@RequestParam(required = false, defaultValue = "15") Integer limit) {
+        return randomServers;
+    }
 
-    //     limit = fixLimitIfNeeded(limit);
+    @GetMapping("random/public")
+    public List<Server> getRandomPublicServers(@RequestParam(required = false, defaultValue = "15") Integer limit) {
 
-    //     List<Server> randomPublicServers = serverService.getRandomPublicServers(limit);
+        limit = fixLimitIfNeeded(limit);
 
-    //     return randomPublicServers;
-    // }
+        List<Server> randomPublicServers = serverService.getRandomPublicServers(limit);
 
-    // private int fixLimitIfNeeded(int limit) {
-    //     if (limit < 1) {
-    //         limit = 1;
-    //     } 
-    //     else if (limit > 30) {
-    //         limit = 30;
-    //     }
-    //     return limit;
-    // }
+        return randomPublicServers;
+    }
 
-    // @GetMapping("{id}")
-    // public ResponseEntity<Server> getServerById(@PathVariable Long id) {
+    private int fixLimitIfNeeded(int limit) {
+        if (limit < 1) {
+            limit = 1;
+        } else if (limit > 30) {
+            limit = 30;
+        }
+        return limit;
+    }
 
-    //     Optional<Server> server = serverService.getServerById(id);
+    @GetMapping("{id}")
+    public ResponseEntity<Server> getServerById(@PathVariable Long id) {
 
-    //     if (server.isPresent()) {
-    //         return ResponseEntity.ok(server.get());
-    //     } 
-    //     else {
-    //         return ResponseEntity.notFound().build();
-    //     }
-    // }
+        Optional<Server> server = serverService.getServerById(id);
 
-    // @GetMapping("search/{name}")
-    // public List<Server> searchServersByName(@PathVariable String name) {
+        if (server.isPresent()) {
+            return ResponseEntity.ok(server.get());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 
-    //     return serverService.getServersByName(name);
-    // }
+    @GetMapping("search/{name}")
+    public List<Server> searchServersByName(@PathVariable String name) {
 
-    // @GetMapping("search/{code}")
-    // public Optional<Server> searchServerByCode(@PathVariable String code) {
+        return serverService.getServersByName(name);
+    }
 
-    //     return serverService.getServerByCode(code);
-    // }
+    @GetMapping("search/{code}")
+    public Optional<Server> searchServerByCode(@PathVariable String code) {
 
-    // @GetMapping("join")
-    // public Server enterServer(@RequestBody JoinServerDto joinServerDto) {
+        return serverService.getServerByCode(code);
+    }
 
-    //     return serverService.enterServer(joinServerDto.getCode(), joinServerDto.getPassword());
-    // }
+    @GetMapping("join")
+    public Server enterServer(@RequestBody JoinServerDto joinServerDto) {
 
-    // @PostMapping("create")
-    // public Server createServer(@RequestBody Server server) {
+        return serverService.enterServer(joinServerDto.getCode(), joinServerDto.getPassword());
+    }
 
-    //     return serverService.saveServer(server);
-    // }
+    @PostMapping("create")
+    public Server createServer(@RequestBody CreateServerDto createServerDto) {
+
+        return serverService.saveServer(createServerMapper.toEntity(createServerDto));
+    }
 
 }
