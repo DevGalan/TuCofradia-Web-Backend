@@ -35,7 +35,7 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = true, length = 800)
+    @Column(nullable = true)
     private String profileMessage;
 
     @Column(nullable = false)

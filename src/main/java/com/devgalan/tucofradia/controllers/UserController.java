@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.devgalan.tucofradia.dtos.user.LoginUserDto;
 import com.devgalan.tucofradia.dtos.user.NoPasswordUserDto;
 import com.devgalan.tucofradia.dtos.user.RegisterUserDto;
+import com.devgalan.tucofradia.dtos.user.UpdateUserDto;
 import com.devgalan.tucofradia.mappers.user.NoPasswordUserMapper;
 import com.devgalan.tucofradia.mappers.user.RegisterUserMapper;
 import com.devgalan.tucofradia.models.User;
@@ -82,7 +83,12 @@ public class UserController {
     @PostMapping("login")
     public ResponseEntity<NoPasswordUserDto> login(@RequestBody LoginUserDto loginUserDto) {
 
-        Optional<User> user = userService.login(loginUserDto.getEmail(), loginUserDto.getPassword());
+        Optional<User> user = userService.login(loginUserDto.getEmail().toLowerCase().trim(), loginUserDto.getPassword());
+
+        user.ifPresent(u -> { 
+            u.setLastLogin(new Date(System.currentTimeMillis()));
+            userService.updateUser(u);
+        });
 
         if (user.isPresent()) {
             return ResponseEntity.ok(noPasswordUserMapper.toDto(user.get()));
@@ -94,6 +100,8 @@ public class UserController {
 
     @PostMapping("register")
     public ResponseEntity<ResponseWithMessage<NoPasswordUserDto>> register(@RequestBody RegisterUserDto registerUser) {
+
+        registerUser.setEmail(registerUser.getEmail().toLowerCase().trim());
 
         if (!isValidEmail(registerUser.getEmail())) {
             return ResponseEntity.badRequest().body(new ResponseWithMessage<NoPasswordUserDto>("Correo electrónico inválido"));
@@ -123,23 +131,20 @@ public class UserController {
     }
     
     @PutMapping("{id}")
-    public ResponseEntity<NoPasswordUserDto> updateUser(@PathVariable Long id, @RequestBody User user) {
+    public ResponseEntity<NoPasswordUserDto> updateUser(@PathVariable Long id, @RequestBody UpdateUserDto user) {
 
         Optional<User> dataBaseUser = userService.getUserById(id);
 
         if (dataBaseUser.isPresent()) {
 
-            if (user.getUsername() == null && user.getProfileMessage() == null && user.getPassword() == null) {
+            if (user.getUsername() == null && user.getProfileMessage() == null) {
                 return ResponseEntity.badRequest().build();
             }
 
             if (user.getUsername() != null) dataBaseUser.get().setUsername(user.getUsername());
             if (user.getProfileMessage() != null) dataBaseUser.get().setProfileMessage(user.getProfileMessage());
-            if (user.getPassword() != null) dataBaseUser.get().setPassword(user.getPassword());
 
-            dataBaseUser.get().setLastLogin(new Date(System.currentTimeMillis())); // TODO: Eliminar last login o hacer metodo login sin contraseña
-
-            User updatedUser = userService.saveUser(dataBaseUser.get());
+            User updatedUser = userService.updateUser(dataBaseUser.get());
 
             return ResponseEntity.ok(noPasswordUserMapper.toDto(updatedUser));
         } 
