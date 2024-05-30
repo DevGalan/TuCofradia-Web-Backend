@@ -18,7 +18,6 @@ import com.devgalan.tucofradia.dtos.news.CreateNewsDto;
 import com.devgalan.tucofradia.dtos.news.ViewNewsDto;
 import com.devgalan.tucofradia.mappers.news.CreateNewsMapper;
 import com.devgalan.tucofradia.mappers.news.ViewNewsMapper;
-import com.devgalan.tucofradia.models.News;
 import com.devgalan.tucofradia.services.image.ImageUploaderService;
 import com.devgalan.tucofradia.services.news.NewService;
 

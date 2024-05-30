@@ -3,7 +3,6 @@ package com.devgalan.tucofradia.mappers.server;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.devgalan.tucofradia.dtos.server.CreateServerDto;
@@ -14,8 +13,11 @@ import com.devgalan.tucofradia.repositories.UserRepository;
 @Component
 public class CreateServerMapper {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+
+    public CreateServerMapper(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     public Server toEntity(CreateServerDto createServerDto) {
         Optional<User> user = userRepository.findById(createServerDto.getAdminId());

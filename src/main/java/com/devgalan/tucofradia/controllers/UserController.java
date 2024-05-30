@@ -26,7 +26,6 @@ import com.devgalan.tucofradia.dtos.user.UpdateUserDto;
 import com.devgalan.tucofradia.mappers.user.NoPasswordUserMapper;
 import com.devgalan.tucofradia.mappers.user.RegisterUserMapper;
 import com.devgalan.tucofradia.models.User;
-import com.devgalan.tucofradia.repositories.UploadedImageRepository;
 import com.devgalan.tucofradia.services.image.ImageUploaderService;
 import com.devgalan.tucofradia.services.user.UserService;
 import com.devgalan.tucofradia.tool.ResponseWithMessage;

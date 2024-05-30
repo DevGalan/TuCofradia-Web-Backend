@@ -14,11 +14,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.devgalan.tucofradia.dtos.server.CreateServerDto;
 import com.devgalan.tucofradia.dtos.server.JoinServerDto;
+import com.devgalan.tucofradia.dtos.server.ViewServerDto;
 import com.devgalan.tucofradia.mappers.server.CreateServerMapper;
+import com.devgalan.tucofradia.mappers.server.ViewServerMapper;
 import com.devgalan.tucofradia.models.Server;
-import com.devgalan.tucofradia.models.Survey;
 import com.devgalan.tucofradia.services.server.ServerService;
-import com.devgalan.tucofradia.services.survey.SurveyService;
 
 @RestController
 @RequestMapping("api/servers")
@@ -26,35 +26,35 @@ public class ServerController {
 
     private final ServerService serverService;
 
-    private final SurveyService surveyService;
-
     private final CreateServerMapper createServerMapper;
 
-    public ServerController(ServerService serverService, SurveyService surveyService,
-            CreateServerMapper createServerMapper) {
+    private final ViewServerMapper viewServerMapper;
+
+    public ServerController(ServerService serverService,
+            CreateServerMapper createServerMapper, ViewServerMapper viewServerMapper) {
         this.serverService = serverService;
-        this.surveyService = surveyService;
         this.createServerMapper = createServerMapper;
+        this.viewServerMapper = viewServerMapper;
     }
 
     @GetMapping("random")
-    public List<Server> getRandomServers(@RequestParam(required = false, defaultValue = "15") Integer limit) {
+    public List<ViewServerDto> getRandomServers(@RequestParam(required = false, defaultValue = "15") Integer limit) {
 
         limit = fixLimitIfNeeded(limit);
 
         List<Server> randomServers = serverService.getRandomServers(limit);
 
-        return randomServers;
+        return viewServerMapper.toDto(randomServers);
     }
 
     @GetMapping("random/public")
-    public List<Server> getRandomPublicServers(@RequestParam(required = false, defaultValue = "15") Integer limit) {
+    public List<ViewServerDto> getRandomPublicServers(@RequestParam(required = false, defaultValue = "15") Integer limit) {
 
         limit = fixLimitIfNeeded(limit);
 
         List<Server> randomPublicServers = serverService.getRandomPublicServers(limit);
 
-        return randomPublicServers;
+        return viewServerMapper.toDto(randomPublicServers);
     }
 
     private int fixLimitIfNeeded(int limit) {
@@ -67,39 +67,45 @@ public class ServerController {
     }
 
     @GetMapping("{id}")
-    public ResponseEntity<Server> getServerById(@PathVariable Long id) {
+    public ResponseEntity<ViewServerDto> getServerById(@PathVariable Long id) {
 
         Optional<Server> server = serverService.getServerById(id);
 
         if (server.isPresent()) {
-            return ResponseEntity.ok(server.get());
+            return ResponseEntity.ok(viewServerMapper.toDto(server.get()));
         } else {
             return ResponseEntity.notFound().build();
         }
     }
 
     @GetMapping("search/{name}")
-    public List<Server> searchServersByName(@PathVariable String name) {
+    public List<ViewServerDto> searchServersByName(@PathVariable String name) {
 
-        return serverService.getServersByName(name);
+        return viewServerMapper.toDto(serverService.getServersByName(name));
     }
 
     @GetMapping("search/{code}")
-    public Optional<Server> searchServerByCode(@PathVariable String code) {
+    public ViewServerDto searchServerByCode(@PathVariable String code) {
 
-        return serverService.getServerByCode(code);
+        var server = serverService.getServerByCode(code);
+
+        if (server.isPresent()) {
+            return viewServerMapper.toDto(server.get());
+        } else {
+            return null;
+        }
     }
 
     @GetMapping("join")
-    public Server enterServer(@RequestBody JoinServerDto joinServerDto) {
+    public ViewServerDto enterServer(@RequestBody JoinServerDto joinServerDto) {
 
-        return serverService.enterServer(joinServerDto.getCode(), joinServerDto.getPassword());
+        return viewServerMapper.toDto(serverService.enterServer(joinServerDto.getCode(), joinServerDto.getPassword()));
     }
 
     @PostMapping("create")
-    public Server createServer(@RequestBody CreateServerDto createServerDto) {
+    public ViewServerDto createServer(@RequestBody CreateServerDto createServerDto) {
 
-        return serverService.saveServer(createServerMapper.toEntity(createServerDto));
+        return viewServerMapper.toDto(serverService.saveServer(createServerMapper.toEntity(createServerDto)));
     }
 
 }
