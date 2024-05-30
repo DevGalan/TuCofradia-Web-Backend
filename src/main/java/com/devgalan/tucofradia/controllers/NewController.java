@@ -1,17 +1,6 @@
 package com.devgalan.tucofradia.controllers;
 
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-
-import com.devgalan.tucofradia.dtos.user.NoPasswordUserDto;
-import com.devgalan.tucofradia.models.New;
-import com.devgalan.tucofradia.models.UploadedImage;
-import com.devgalan.tucofradia.repositories.UploadedImageRepository;
-import com.devgalan.tucofradia.services.image.ImageUploaderService;
-import com.devgalan.tucofradia.services.news.NewService;
-
 import java.util.List;
-import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +11,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.devgalan.tucofradia.models.New;
+import com.devgalan.tucofradia.repositories.UploadedImageRepository;
+import com.devgalan.tucofradia.services.image.ImageUploaderService;
+import com.devgalan.tucofradia.services.news.NewService;
 
 @RestController
 @RequestMapping("api/news")
@@ -91,31 +87,9 @@ public class NewController {
             return ResponseEntity.badRequest().build();
         }
 
-        if (dataBaseNew.get().getImage() != null) {
-            imageUploaderService.deleteImage(
-                    dataBaseNew.get().getImage().getFullPath());
-        }
+        var uploadedImage = imageUploaderService.uploadImage(dataBaseNew.get().getImage(), image, IMAGES_PATH,
+                SERVER_URL, id);
 
-        var random = new Random();
-        int randomNumber;
-        String filename = image.getOriginalFilename();
-        int lastIndexOfDot = filename.lastIndexOf(".");
-        String imageExtension = ".jpg";
-
-        if (lastIndexOfDot != -1) {
-            imageExtension = filename.substring(lastIndexOfDot);
-        }
-        do {
-            randomNumber = random.nextInt();
-        } while (uploadedImageRepository.existsByName(randomNumber + imageExtension));
-
-        UploadedImage uploadedImage = new UploadedImage();
-        String imageName = randomNumber + imageExtension;
-        uploadedImage.setName(imageName);
-        String imagePath = imageUploaderService.uploadImage(image, IMAGES_PATH, imageName);
-        uploadedImage.setPath(imagePath);
-        uploadedImage.setOnlinePath(SERVER_URL + IMAGES_PATH + imageName);
-        uploadedImage.setUserId(dataBaseNew.get().getId());
         dataBaseNew.get().setImage(uploadedImage);
         var news = newService.updateNew(dataBaseNew.get());
         return ResponseEntity.ok(news);

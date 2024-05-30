@@ -3,7 +3,6 @@ package com.devgalan.tucofradia.controllers;
 import java.sql.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,7 +25,6 @@ import com.devgalan.tucofradia.dtos.user.RegisterUserDto;
 import com.devgalan.tucofradia.dtos.user.UpdateUserDto;
 import com.devgalan.tucofradia.mappers.user.NoPasswordUserMapper;
 import com.devgalan.tucofradia.mappers.user.RegisterUserMapper;
-import com.devgalan.tucofradia.models.UploadedImage;
 import com.devgalan.tucofradia.models.User;
 import com.devgalan.tucofradia.repositories.UploadedImageRepository;
 import com.devgalan.tucofradia.services.image.ImageUploaderService;
@@ -163,30 +161,9 @@ public class UserController {
             return ResponseEntity.badRequest().build();
         }
 
-        if (dataBaseUser.get().getProfilePicture() != null) {
-            imageUploaderService.deleteImage(dataBaseUser.get().getProfilePicture().getFullPath());
-        }
+        var uploadedImage = imageUploaderService.uploadImage(dataBaseUser.get().getProfilePicture(), image, IMAGES_PATH,
+                SERVER_URL, id);
 
-        var random = new Random();
-        int randomNumber;
-        String filename = image.getOriginalFilename();
-        int lastIndexOfDot = filename.lastIndexOf(".");
-        String imageExtension = ".jpg";
-
-        if (lastIndexOfDot != -1) {
-            imageExtension = filename.substring(lastIndexOfDot);
-        }
-        do {
-            randomNumber = random.nextInt();
-        } while (uploadedImageRepository.existsByName(randomNumber + imageExtension));
-
-        UploadedImage uploadedImage = new UploadedImage();
-        String imageName = randomNumber + imageExtension;
-        uploadedImage.setName(imageName);
-        String imagePath = imageUploaderService.uploadImage(image, IMAGES_PATH, imageName);
-        uploadedImage.setPath(imagePath);
-        uploadedImage.setOnlinePath(SERVER_URL + IMAGES_PATH + imageName);
-        uploadedImage.setUserId(dataBaseUser.get().getId());
         dataBaseUser.get().setProfilePicture(uploadedImage);
         var user = userService.updateUser(dataBaseUser.get());
         return ResponseEntity.ok(noPasswordUserMapper.toDto(user));
