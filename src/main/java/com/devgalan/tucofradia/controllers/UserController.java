@@ -43,21 +43,17 @@ public class UserController {
 
     private final ImageUploaderService imageUploaderService;
 
-    private final UploadedImageRepository uploadedImageRepository;
-
     private final String IMAGES_PATH = "uploaded_images/profile_pics/";
 
     @Value("${server.url}")
     private String SERVER_URL;
 
     public UserController(UserService userService, NoPasswordUserMapper noPasswordUserMapper,
-            RegisterUserMapper registerUserMapper, ImageUploaderService imageUploaderService,
-            UploadedImageRepository uploadedImageRepository) {
+            RegisterUserMapper registerUserMapper, ImageUploaderService imageUploaderService) {
         this.userService = userService;
         this.noPasswordUserMapper = noPasswordUserMapper;
         this.registerUserMapper = registerUserMapper;
         this.imageUploaderService = imageUploaderService;
-        this.uploadedImageRepository = uploadedImageRepository;
     }
 
     @GetMapping("random")

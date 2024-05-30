@@ -5,7 +5,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
-import com.devgalan.tucofradia.models.New;
+import com.devgalan.tucofradia.models.News;
 import com.devgalan.tucofradia.repositories.NewRepository;
 
 @Service
@@ -18,12 +18,12 @@ public class NewServiceImpl implements NewService {
     }
 
     @Override
-    public List<New> getNews() {
+    public List<News> getNews() {
         return newRepository.findAll();
     }
 
     @Override
-    public void createNew(New createNew) {
+    public void createNew(News createNew) {
         newRepository.save(createNew);
     }
 
@@ -33,12 +33,12 @@ public class NewServiceImpl implements NewService {
     }
 
     @Override
-    public New updateNew(New updateNew) {
+    public News updateNew(News updateNew) {
         return newRepository.save(updateNew);
     }
 
     @Override
-    public Optional<New> getNewById(Long id) {
+    public Optional<News> getNewById(Long id) {
         return newRepository.findById(id);
     }
 

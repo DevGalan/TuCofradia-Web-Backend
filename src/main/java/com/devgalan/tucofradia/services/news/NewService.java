@@ -3,19 +3,19 @@ package com.devgalan.tucofradia.services.news;
 import java.util.List;
 import java.util.Optional;
 
-import com.devgalan.tucofradia.models.New;
+import com.devgalan.tucofradia.models.News;
 
 public interface NewService {
 
-    List<New> getNews();
+    List<News> getNews();
 
-    void createNew(New createNew);
+    void createNew(News createNew);
 
     void deleteNew(Long id);
 
-    New updateNew(New updateNew);
+    News updateNew(News updateNew);
 
-    Optional<New> getNewById(Long id);
+    Optional<News> getNewById(Long id);
 
     boolean existsById(Long id);
 

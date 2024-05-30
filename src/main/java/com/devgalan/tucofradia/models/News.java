@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "NEWS")
-public class New {
+public class News {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,7 +29,7 @@ public class New {
     @Column(nullable = false, unique = true)
     private String title;
     
-    @Column(nullable = false)
+    @Column(nullable = false, length = 1000)
     private String body;
 
     @Column(nullable = false)

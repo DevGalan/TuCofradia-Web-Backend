@@ -14,46 +14,52 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.devgalan.tucofradia.models.New;
-import com.devgalan.tucofradia.repositories.UploadedImageRepository;
+import com.devgalan.tucofradia.dtos.news.CreateNewsDto;
+import com.devgalan.tucofradia.dtos.news.ViewNewsDto;
+import com.devgalan.tucofradia.mappers.news.CreateNewsMapper;
+import com.devgalan.tucofradia.mappers.news.ViewNewsMapper;
+import com.devgalan.tucofradia.models.News;
 import com.devgalan.tucofradia.services.image.ImageUploaderService;
 import com.devgalan.tucofradia.services.news.NewService;
 
 @RestController
 @RequestMapping("api/news")
-public class NewController {
+public class NewsController {
 
     private final NewService newService;
 
     private final ImageUploaderService imageUploaderService;
 
-    private final UploadedImageRepository uploadedImageRepository;
+    private final ViewNewsMapper viewNewsMapper;
+
+    private final CreateNewsMapper createNewsMapper;
 
     private final String IMAGES_PATH = "uploaded_images/images_of_news/";
 
     @Value("${server.url}")
     private String SERVER_URL;
 
-    public NewController(NewService newService, ImageUploaderService imageUploaderService,
-            UploadedImageRepository uploadedImageRepository) {
+    public NewsController(NewService newService, ImageUploaderService imageUploaderService,
+            ViewNewsMapper viewNewsMapper, CreateNewsMapper createNewsMapper) {
         this.newService = newService;
         this.imageUploaderService = imageUploaderService;
-        this.uploadedImageRepository = uploadedImageRepository;
+        this.viewNewsMapper = viewNewsMapper;
+        this.createNewsMapper = createNewsMapper;
     }
 
     @GetMapping("")
-    public ResponseEntity<List<New>> getNews() {
-        return ResponseEntity.ok(newService.getNews());
+    public ResponseEntity<List<ViewNewsDto>> getNews() {
+        return ResponseEntity.ok(viewNewsMapper.toDto(newService.getNews()));
     }
 
     @PostMapping("/create")
-    public ResponseEntity<String> createNew(New createNew) {
-        newService.createNew(createNew);
+    public ResponseEntity<String> createNew(@RequestBody CreateNewsDto createNew) {
+        newService.createNew(createNewsMapper.toEntity(createNew));
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("{id}/update")
-    public ResponseEntity<New> updateNew(@PathVariable Long id, New updateNew) {
+    public ResponseEntity<ViewNewsDto> updateNew(@PathVariable Long id, CreateNewsDto updateNew) {
         var dataBaseNew = newService.getNewById(id);
         if (dataBaseNew.isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -61,7 +67,8 @@ public class NewController {
         dataBaseNew.get().setTitle(updateNew.getTitle());
         dataBaseNew.get().setBody(updateNew.getBody());
         dataBaseNew.get().setDate(updateNew.getDate());
-        return ResponseEntity.ok(newService.updateNew(dataBaseNew.get()));
+        var updatedNew = newService.updateNew(dataBaseNew.get());
+        return ResponseEntity.ok(viewNewsMapper.toDto(updatedNew));
     }
 
     @DeleteMapping("/delete")
@@ -75,7 +82,7 @@ public class NewController {
     }
 
     @PostMapping("{id}/image")
-    public ResponseEntity<New> updateUserImage(@PathVariable Long id, @RequestBody MultipartFile image) {
+    public ResponseEntity<ViewNewsDto> updateUserImage(@PathVariable Long id, @RequestBody MultipartFile image) {
 
         var dataBaseNew = newService.getNewById(id);
 
@@ -92,11 +99,11 @@ public class NewController {
 
         dataBaseNew.get().setImage(uploadedImage);
         var news = newService.updateNew(dataBaseNew.get());
-        return ResponseEntity.ok(news);
+        return ResponseEntity.ok(viewNewsMapper.toDto(news));
     }
 
     @DeleteMapping("{id}/image")
-    public ResponseEntity<New> deleteUserImage(@PathVariable Long id) {
+    public ResponseEntity<ViewNewsDto> deleteUserImage(@PathVariable Long id) {
 
         var dataBaseNew = newService.getNewById(id);
 
@@ -114,6 +121,6 @@ public class NewController {
 
         var updatedNew = newService.updateNew(dataBaseNew.get());
 
-        return ResponseEntity.ok(updatedNew);
+        return ResponseEntity.ok(viewNewsMapper.toDto(updatedNew));
     }
 }
