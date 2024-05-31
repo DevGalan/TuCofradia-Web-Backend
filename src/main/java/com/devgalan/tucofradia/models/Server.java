@@ -38,6 +38,9 @@ public class Server {
     @Column(nullable = false)
     private Byte gameMonth;
 
+    @Column(nullable = false)
+    private Byte maxGuilds;
+
     @ManyToOne
     @JoinColumn(name = "admin_id", nullable = false)
     private User admin;

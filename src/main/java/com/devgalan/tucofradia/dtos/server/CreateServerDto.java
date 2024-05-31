@@ -17,5 +17,7 @@ public class CreateServerDto {
 
     private String password;
 
+    private Byte maxGuilds;
+
     private Long adminId;
 }

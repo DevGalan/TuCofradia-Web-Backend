@@ -20,6 +20,8 @@ public class ViewServerDto {
     private String description;
 
     private Byte gameMonth;
+    
+    private Byte maxGuilds;
 
     private NoPasswordUserDto admin;
 }
