@@ -37,6 +37,12 @@ public class ServerController {
         this.viewServerMapper = viewServerMapper;
     }
 
+    @GetMapping("")
+    public List<ViewServerDto> getAllServers() {
+
+        return viewServerMapper.toDto(serverService.getAllServers());
+    }
+
     @GetMapping("random")
     public List<ViewServerDto> getRandomServers(@RequestParam(required = false, defaultValue = "15") Integer limit) {
 
@@ -99,7 +105,18 @@ public class ServerController {
     @GetMapping("join")
     public ViewServerDto enterServer(@RequestBody JoinServerDto joinServerDto) {
 
-        return viewServerMapper.toDto(serverService.enterServer(joinServerDto.getCode(), joinServerDto.getPassword()));
+        if (joinServerDto.getPassword() == null) {
+            joinServerDto.setPassword("");
+        }
+
+        var server = serverService.enterServer(joinServerDto.getCode(), joinServerDto.getPassword());
+
+        if (server.isPresent()) {
+        // if (server.get().getMaxGuilds() >= server.get().get) TODO: Obtener de guild service las guilds del server y comparar con maxGuilds
+            return viewServerMapper.toDto(server.get());
+        } else {
+            return null;
+        }
     }
 
     @PostMapping("create")

@@ -15,18 +15,16 @@ public interface ServerService {
 
     List<Server> getServersByName(String name);
 
-    Server enterServer(String code, String password);
-
-    Optional<Server> login(String email, String password);
+    Optional<Server> enterServer(String code, String password);
 
     Optional<Server> getServerByCode(String code);
-
-    Boolean existsByEmail(String email);
 
     Boolean existsById(Long id);
 
     Server saveServer(Server serverDto);
 
     void deleteServer(Long id);
+
+    List<Server> getAllServers();
 
 }
