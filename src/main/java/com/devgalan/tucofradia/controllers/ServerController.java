@@ -102,7 +102,7 @@ public class ServerController {
         }
     }
 
-    @GetMapping("join")
+    @PostMapping("join")
     public ViewServerDto enterServer(@RequestBody JoinServerDto joinServerDto) {
 
         if (joinServerDto.getPassword() == null) {
@@ -111,18 +111,23 @@ public class ServerController {
 
         var server = serverService.enterServer(joinServerDto.getCode(), joinServerDto.getPassword());
 
-        if (server.isPresent()) {
-        // if (server.get().getMaxGuilds() >= server.get().get) TODO: Obtener de guild service las guilds del server y comparar con maxGuilds
-            return viewServerMapper.toDto(server.get());
-        } else {
-            return null;
-        }
+        if (server.isPresent() && server.get().getMaxPlayers() > server.get().getAmountPlayers()) {
+                return viewServerMapper.toDto(server.get());
+            }
+        
+        return null;
     }
 
     @PostMapping("create")
     public ViewServerDto createServer(@RequestBody CreateServerDto createServerDto) {
 
         return viewServerMapper.toDto(serverService.saveServer(createServerMapper.toEntity(createServerDto)));
+    }
+
+    @GetMapping("{serverId}/leave/{userId}")
+    public void leaveServer(@PathVariable Long serverId, @PathVariable Long userId) {
+
+        // serverService.leaveServer(serverId, userId); TODO
     }
 
 }

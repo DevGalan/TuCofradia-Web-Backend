@@ -12,7 +12,7 @@ import com.devgalan.tucofradia.models.User;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
     
-    @Query(nativeQuery = true, value = "SELECT * FROM USERS ORDER BY RANDOM() LIMIT :limit")
+    @Query(nativeQuery = true, value = "SELECT * FROM users ORDER BY RAND() LIMIT :limit")
     List<User> getRandomUsers(Integer limit);
 
     List<User> findByUsername(String username);

@@ -19,7 +19,7 @@ public class ViewServerMapper {
 
     public ViewServerDto toDto(Server server) {
         return new ViewServerDto(server.getId(), server.getName(), server.getCode(), server.getDescription(),
-        server.getGameMonth(), server.getMaxGuilds(), noPasswordUserMapper.toDto(server.getAdmin()));
+        server.getGameMonth(), server.getMaxPlayers(), server.getAmountPlayers(), noPasswordUserMapper.toDto(server.getAdmin()));
     }
 
     public List<ViewServerDto> toDto(List<Server> servers) {

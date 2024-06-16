@@ -5,6 +5,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.sql.Date;
+
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
@@ -60,6 +63,11 @@ public class UserControllerTest {
         }
     }
 
+    @AfterAll
+    public void tearDown() {
+        userRepository.deleteAll();
+    }
+
     @Test
     @WithMockUser(username = "testUser", roles = { "ADMIN" })
     public void whenCallGetRandomUsers_thenReturnRandomUsers() throws Exception {
@@ -75,11 +83,17 @@ public class UserControllerTest {
     @Order(1)
     @WithMockUser(username = "testUser", roles = { "ADMIN" })
     public void whenCallGetUserById_withValidId_thenReturnUser() throws Exception {
-        Long userId = 1L;
-        mockMvc.perform(MockMvcRequestBuilders.get(baseURL + "/{userId}", userId)
+        var newUser = new User();
+        newUser.setUsername("delete");
+        newUser.setEmail("delete@gmail.com");
+        newUser.setPassword("password");
+        newUser.setLastLogin(new Date(System.currentTimeMillis()));
+        newUser.setRegisterDate(new Date(System.currentTimeMillis()));
+        var savedUser = userRepository.save(newUser);
+        mockMvc.perform(MockMvcRequestBuilders.get(baseURL + "/{userId}", savedUser.getId())
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(userId));
+                .andExpect(jsonPath("$.id").value(savedUser.getId()));
     }
 
     @Test
@@ -197,8 +211,14 @@ public class UserControllerTest {
     @Order(2)
     @WithMockUser(username = "testUser", roles = { "ADMIN" })
     public void whenCallDeleteUser_withValidId_thenReturnUserDeleted() throws Exception {
-        Long userId = 21L;
-        mockMvc.perform(MockMvcRequestBuilders.delete(baseURL + "/{id}", userId)
+        var newUser = new User();
+        newUser.setUsername("delete");
+        newUser.setEmail("delete@gmail.com");
+        newUser.setPassword("password");
+        newUser.setLastLogin(new Date(System.currentTimeMillis()));
+        newUser.setRegisterDate(new Date(System.currentTimeMillis()));
+        var savedUser = userRepository.save(newUser);
+        mockMvc.perform(MockMvcRequestBuilders.delete(baseURL + "/{id}", savedUser.getId())
                 .with(httpBasic("user", "user"))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())

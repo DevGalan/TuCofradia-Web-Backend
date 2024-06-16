@@ -39,7 +39,10 @@ public class Server {
     private Byte gameMonth;
 
     @Column(nullable = false)
-    private Byte maxGuilds;
+    private Byte maxPlayers;
+
+    @Column(nullable = false)
+    private Byte amountPlayers;
 
     @ManyToOne
     @JoinColumn(name = "admin_id", nullable = false)
