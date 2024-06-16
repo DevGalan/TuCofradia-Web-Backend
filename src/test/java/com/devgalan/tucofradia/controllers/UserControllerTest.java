@@ -7,7 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.sql.Date;
 
-import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
@@ -57,13 +57,12 @@ public class UserControllerTest {
 
     @BeforeEach
     public void setUp() {
-        userRepository.deleteAll();
         for (int i = 1; i <= 20; i++) {
             registerUser(i, "user");
         }
     }
 
-    @AfterAll
+    @AfterEach
     public void tearDown() {
         userRepository.deleteAll();
     }
@@ -187,7 +186,7 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.id").value(updatedUser.getId()))
                 .andExpect(jsonPath("$.username").value(updatedUser.getUsername()))
                 .andExpect(jsonPath("$.profileMessage").value(updatedUser.getProfileMessage()));
-                // .andExpect(jsonPath("$.profilePicture").value(updatedUser.getProfilePicture()));
+        // .andExpect(jsonPath("$.profilePicture").value(updatedUser.getProfilePicture()));
     }
 
     @Test
