@@ -27,16 +27,9 @@ public class UploadedImage {
     private String name;
 
     @Column(nullable = false)
-    private String path;
-
-    @Column(nullable = false)
-    private String onlinePath;
+    private String url;
 
     @JoinColumn(name = "user_id")
     private Long userId;
-
-    public String getFullPath() {
-        return path + name;
-    }
 
 }

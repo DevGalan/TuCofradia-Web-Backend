@@ -13,7 +13,7 @@ public class NoPasswordUserMapper {
     public NoPasswordUserDto toDto(User user) {
         return new NoPasswordUserDto(user.getId(), user.getUsername(), user.getEmail(),
                 user.getProfileMessage(), user.getLastLogin(), user.getRegisterDate(),
-                user.getProfilePicture() != null ? user.getProfilePicture().getOnlinePath() : null);
+                user.getProfilePicture() != null ? user.getProfilePicture().getUrl() : null);
     }
 
     public List<NoPasswordUserDto> toDto(List<User> users) {

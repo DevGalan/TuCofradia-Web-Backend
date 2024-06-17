@@ -12,7 +12,7 @@ public class ViewNewsMapper {
 
     public ViewNewsDto toDto(News news) {
         return new ViewNewsDto(news.getId(), news.getTitle(), news.getBody(), news.getDate(),
-                news.getImage() != null ? news.getImage().getOnlinePath() : null);
+                news.getImage() != null ? news.getImage().getUrl() : null);
     }
 
     public List<ViewNewsDto> toDto(List<News> news) {

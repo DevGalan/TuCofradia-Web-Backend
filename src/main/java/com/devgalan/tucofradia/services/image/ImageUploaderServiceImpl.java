@@ -2,13 +2,15 @@ package com.devgalan.tucofradia.services.image;
 
 import java.util.Random;
 
-import org.springframework.core.io.Resource;
+import org.hibernate.mapping.Map;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import com.devgalan.tucofradia.data.FileDataAccess;
+import com.cloudinary.utils.ObjectUtils;
+import com.devgalan.tucofradia.models.ImageModel;
 import com.devgalan.tucofradia.models.UploadedImage;
 import com.devgalan.tucofradia.repositories.UploadedImageRepository;
+import com.devgalan.tucofradia.services.cloudinary.CloudinaryService;
 
 @Service
 public class ImageUploaderServiceImpl implements ImageUploaderService {
@@ -17,58 +19,50 @@ public class ImageUploaderServiceImpl implements ImageUploaderService {
 
     private final Random random;
 
-    private final FileDataAccess fileDataAccess;
+    private final CloudinaryService cloudinaryService;
 
-    private final String RESOURCES_PATH = "src/main/resources/static/";
-
-    public ImageUploaderServiceImpl(UploadedImageRepository uploadedImageRepository) {
+    public ImageUploaderServiceImpl(UploadedImageRepository uploadedImageRepository,
+            CloudinaryService cloudinaryService) {
         this.uploadedImageRepository = uploadedImageRepository;
-        this.fileDataAccess = new FileDataAccess(RESOURCES_PATH);
+        this.cloudinaryService = cloudinaryService;
         random = new Random();
     }
 
     @Override
-    public UploadedImage uploadImage(UploadedImage uploadedImage, MultipartFile image, String imagesPath,
-            String serverUrl, Long userId) {
-
-        if (uploadedImage != null) {
-            fileDataAccess.delete(uploadedImage.getFullPath());
-        }
+    public UploadedImage uploadImage(UploadedImage uploadedImage, ImageModel imageModel, Long userId) {
 
         int randomNumber;
-        String filename = image.getOriginalFilename();
-        int lastIndexOfDot = filename.lastIndexOf(".");
         String imageExtension = ".jpg";
         String fileName;
-
-        if (lastIndexOfDot != -1) {
-            imageExtension = filename.substring(lastIndexOfDot);
-        }
         do {
             randomNumber = random.nextInt();
             fileName = randomNumber + imageExtension;
         } while (uploadedImageRepository.existsByName(fileName));
+        imageModel.setName(fileName);
 
-        UploadedImage newUploadedImage = new UploadedImage();
-        String imageName = randomNumber + imageExtension;
-        String imagePath = fileDataAccess.write(image, imagesPath, imageName);
+        try {
+            if (uploadedImage != null) {
+                deleteImage(uploadedImage.getUrl());
+            }
 
-        newUploadedImage.setName(imageName);
-        newUploadedImage.setPath(imagePath);
-        newUploadedImage.setOnlinePath(serverUrl + imagesPath + imageName);
-        newUploadedImage.setUserId(userId);
-
-        return newUploadedImage;
+            UploadedImage image = new UploadedImage();
+            image.setName(imageModel.getName());
+            image.setUrl(cloudinaryService.uploadImage(imageModel.getFile(), "folder"));
+            image.setUserId(userId);
+            if(image.getUrl() == null) {
+                return null;
+            }
+            uploadedImageRepository.save(image);
+            return image;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     @Override
-    public void deleteImage(String imagePath) {
-        fileDataAccess.delete(imagePath);
-    }
-
-    @Override
-    public Resource getUploadedImage(String imagePath) {
-        return fileDataAccess.read(imagePath);
+    public void deleteImage(String url) {
+        cloudinaryService.deleteImage(url);
     }
 
 }

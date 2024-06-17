@@ -12,10 +12,10 @@ import com.devgalan.tucofradia.models.Server;
 @Repository
 public interface ServerRepository extends JpaRepository<Server, Long> {
 
-    @Query(nativeQuery = true, value = "SELECT * FROM SERVERS ORDER BY RANDOM() LIMIT :limit")
+    @Query(nativeQuery = true, value = "SELECT * FROM servers ORDER BY RAND() LIMIT :limit")
     List<Server> getRandomServers(Integer limit);
 
-    @Query(nativeQuery = true, value = "SELECT * FROM SERVERS WHERE password = '' ORDER BY RANDOM() LIMIT :limit")
+    @Query(nativeQuery = true, value = "SELECT * FROM servers WHERE password = '' ORDER BY RAND() LIMIT :limit")
     List<Server> getRandomPublicServers(Integer limit);
 
     Optional<Server> findByCodeAndPassword(String code, String password);

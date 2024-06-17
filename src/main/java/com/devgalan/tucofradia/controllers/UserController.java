@@ -25,6 +25,7 @@ import com.devgalan.tucofradia.dtos.user.RegisterUserDto;
 import com.devgalan.tucofradia.dtos.user.UpdateUserDto;
 import com.devgalan.tucofradia.mappers.user.NoPasswordUserMapper;
 import com.devgalan.tucofradia.mappers.user.RegisterUserMapper;
+import com.devgalan.tucofradia.models.ImageModel;
 import com.devgalan.tucofradia.models.User;
 import com.devgalan.tucofradia.services.image.ImageUploaderService;
 import com.devgalan.tucofradia.services.user.UserService;
@@ -156,8 +157,7 @@ public class UserController {
             return ResponseEntity.badRequest().build();
         }
 
-        var uploadedImage = imageUploaderService.uploadImage(dataBaseUser.get().getProfilePicture(), image, IMAGES_PATH,
-                SERVER_URL, id);
+        var uploadedImage = imageUploaderService.uploadImage(dataBaseUser.get().getProfilePicture(), new ImageModel("", image), id);
 
         dataBaseUser.get().setProfilePicture(uploadedImage);
         var user = userService.updateUser(dataBaseUser.get());
@@ -203,7 +203,7 @@ public class UserController {
 
         dataBaseUser.get().setProfilePicture(null);
 
-        imageUploaderService.deleteImage(dataBaseUser.get().getProfilePicture().getFullPath());
+        imageUploaderService.deleteImage(dataBaseUser.get().getProfilePicture().getUrl());
 
         var updatedUser = userService.updateUser(dataBaseUser.get());
 

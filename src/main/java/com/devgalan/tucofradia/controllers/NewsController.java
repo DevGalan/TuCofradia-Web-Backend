@@ -18,6 +18,7 @@ import com.devgalan.tucofradia.dtos.news.CreateNewsDto;
 import com.devgalan.tucofradia.dtos.news.ViewNewsDto;
 import com.devgalan.tucofradia.mappers.news.CreateNewsMapper;
 import com.devgalan.tucofradia.mappers.news.ViewNewsMapper;
+import com.devgalan.tucofradia.models.ImageModel;
 import com.devgalan.tucofradia.services.image.ImageUploaderService;
 import com.devgalan.tucofradia.services.news.NewService;
 
@@ -93,8 +94,7 @@ public class NewsController {
             return ResponseEntity.badRequest().build();
         }
 
-        var uploadedImage = imageUploaderService.uploadImage(dataBaseNew.get().getImage(), image, IMAGES_PATH,
-                SERVER_URL, id);
+        var uploadedImage = imageUploaderService.uploadImage(dataBaseNew.get().getImage(), new ImageModel("", image), id);
 
         dataBaseNew.get().setImage(uploadedImage);
         var news = newService.updateNew(dataBaseNew.get());
@@ -116,7 +116,7 @@ public class NewsController {
 
         dataBaseNew.get().setId(null);
 
-        imageUploaderService.deleteImage(dataBaseNew.get().getImage().getFullPath());
+        imageUploaderService.deleteImage(dataBaseNew.get().getImage().getUrl());
 
         var updatedNew = newService.updateNew(dataBaseNew.get());
 
