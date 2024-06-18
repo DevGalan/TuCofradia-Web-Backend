@@ -1,5 +1,7 @@
 package com.devgalan.tucofradia.mappers.server;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,9 +28,11 @@ public class CreateServerMapper {
         }
         Server server = new Server();
         server.setName(createServerDto.getName());
-        server.setCode(createServerDto.getCode());
         server.setDescription(createServerDto.getDescription());
         server.setPassword(createServerDto.getPassword());
+        server.setMaxPlayers(createServerDto.getMaxPlayers());
+        server.setAmountPlayers((byte) 0);
+        server.setGameMonth((byte) Calendar.getInstance().get(Calendar.MONTH));
         server.setAdmin(user.get());
         return server;
     }

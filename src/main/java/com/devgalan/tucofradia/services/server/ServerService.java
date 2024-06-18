@@ -27,4 +27,12 @@ public interface ServerService {
 
     List<Server> getAllServers();
 
+    String generateCode();
+
+    List<Server> getServersByUserId(Long userId);
+
+    List<Server> getJoinedServersByUserId(Long userId);
+
+    void leaveServer(Long serverId, Long userId);
+
 }

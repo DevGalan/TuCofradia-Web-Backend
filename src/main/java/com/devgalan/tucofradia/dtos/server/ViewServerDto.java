@@ -25,5 +25,7 @@ public class ViewServerDto {
 
     private Byte amountPlayers;
 
+    private Boolean isPublic;
+
     private NoPasswordUserDto admin;
 }

@@ -24,4 +24,8 @@ public interface ServerRepository extends JpaRepository<Server, Long> {
 
     Optional<Server> findByCode(String code);
 
+    Boolean existsByCode(String code);
+
+    List<Server> findByAdminId(Long adminId);
+
 }
