@@ -38,6 +38,9 @@ public class Guild {
     @Column(nullable = false)
     private Integer brothers;
 
+    @Column(nullable = false)
+    private Byte fee;
+
     @ManyToOne
     @JoinColumn(name = "server_id", nullable = false)
     private Server server;

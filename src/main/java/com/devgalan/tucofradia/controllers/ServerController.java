@@ -16,9 +16,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.devgalan.tucofradia.dtos.guild.CreateGuildDto;
+import com.devgalan.tucofradia.dtos.guild.ViewGuildDto;
 import com.devgalan.tucofradia.dtos.server.CreateServerDto;
 import com.devgalan.tucofradia.dtos.server.JoinServerDto;
 import com.devgalan.tucofradia.dtos.server.ViewServerDto;
+import com.devgalan.tucofradia.mappers.guild.ViewGuildMapper;
 import com.devgalan.tucofradia.mappers.server.CreateServerMapper;
 import com.devgalan.tucofradia.mappers.server.UpdateServerDto;
 import com.devgalan.tucofradia.mappers.server.ViewServerMapper;
@@ -35,11 +38,14 @@ public class ServerController {
 
     private final ViewServerMapper viewServerMapper;
 
+    private final ViewGuildMapper viewGuildMapper;
+
     public ServerController(ServerService serverService,
-            CreateServerMapper createServerMapper, ViewServerMapper viewServerMapper) {
+            CreateServerMapper createServerMapper, ViewServerMapper viewServerMapper, ViewGuildMapper viewGuildMapper) {
         this.serverService = serverService;
         this.createServerMapper = createServerMapper;
         this.viewServerMapper = viewServerMapper;
+        this.viewGuildMapper = viewGuildMapper;
     }
 
     @GetMapping("")
@@ -91,7 +97,8 @@ public class ServerController {
     }
 
     @PutMapping("{id}/update")
-    public ResponseEntity<ViewServerDto> updateServer(@PathVariable Long id, @RequestBody UpdateServerDto updateServerDto) {
+    public ResponseEntity<ViewServerDto> updateServer(@PathVariable Long id,
+            @RequestBody UpdateServerDto updateServerDto) {
 
         Optional<Server> server = serverService.getServerById(id);
 
@@ -165,8 +172,21 @@ public class ServerController {
 
     @DeleteMapping("{serverId}/leave/{userId}")
     public void leaveServer(@PathVariable Long serverId, @PathVariable Long userId) {
-            
+
         serverService.leaveServer(serverId, userId);
+    }
+
+    @PostMapping("{serverId}/user/{userId}/guild/create")
+    public ViewGuildDto createGuild(@PathVariable Long serverId, @PathVariable Long userId,
+            @RequestBody CreateGuildDto createGuildDto) {
+
+        return viewGuildMapper.toDto(serverService.createGuild(serverId, userId, createGuildDto));
+    }
+
+    @GetMapping("{serverId}/guilds")
+    public List<ViewGuildDto> getGuilds(@PathVariable Long serverId) {
+
+        return viewGuildMapper.toDto(serverService.getGuilds(serverId));
     }
 
 }

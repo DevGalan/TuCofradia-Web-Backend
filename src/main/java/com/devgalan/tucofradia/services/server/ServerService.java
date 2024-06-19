@@ -3,6 +3,8 @@ package com.devgalan.tucofradia.services.server;
 import java.util.List;
 import java.util.Optional;
 
+import com.devgalan.tucofradia.dtos.guild.CreateGuildDto;
+import com.devgalan.tucofradia.models.Guild;
 import com.devgalan.tucofradia.models.Server;
 
 public interface ServerService {
@@ -34,5 +36,9 @@ public interface ServerService {
     List<Server> getJoinedServersByUserId(Long userId);
 
     void leaveServer(Long serverId, Long userId);
+
+    Guild createGuild(Long serverId, Long userId, CreateGuildDto createGuildDto);
+
+    List<Guild> getGuilds(Long serverId);
 
 }

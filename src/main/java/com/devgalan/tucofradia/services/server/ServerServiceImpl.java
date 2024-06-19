@@ -6,10 +6,15 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import com.devgalan.tucofradia.dtos.guild.CreateGuildDto;
+import com.devgalan.tucofradia.mappers.guild.CreateGuildMapper;
+import com.devgalan.tucofradia.models.Guild;
 import com.devgalan.tucofradia.models.Server;
 import com.devgalan.tucofradia.models.UserGuild;
+import com.devgalan.tucofradia.repositories.GuildRepository;
 import com.devgalan.tucofradia.repositories.ServerRepository;
 import com.devgalan.tucofradia.repositories.UserGuildRepository;
+import com.devgalan.tucofradia.repositories.UserRepository;
 
 @Service
 public class ServerServiceImpl implements ServerService {
@@ -18,9 +23,19 @@ public class ServerServiceImpl implements ServerService {
 
     private final UserGuildRepository userGuildRepository;
 
-    public ServerServiceImpl(ServerRepository serverRepository, UserGuildRepository userGuildRepository) {
+    private final UserRepository userRepository;
+
+    private final GuildRepository guildRepository;
+
+    private final CreateGuildMapper createGuildMapper;
+
+    public ServerServiceImpl(ServerRepository serverRepository, UserGuildRepository userGuildRepository,
+            UserRepository userRepository, GuildRepository guildRepository, CreateGuildMapper createGuildMapper) {
         this.serverRepository = serverRepository;
         this.userGuildRepository = userGuildRepository;
+        this.userRepository = userRepository;
+        this.guildRepository = guildRepository;
+        this.createGuildMapper = createGuildMapper;
     }
 
     @Override
@@ -100,7 +115,7 @@ public class ServerServiceImpl implements ServerService {
     @Override
     public List<Server> getJoinedServersByUserId(Long userId) {
         var userGuilds = userGuildRepository.findByUserId(userId);
-        
+
         List<Server> servers = new ArrayList<>();
         for (UserGuild userGuild : userGuilds) {
             servers.add(userGuild.getGuild().getServer());
@@ -115,13 +130,13 @@ public class ServerServiceImpl implements ServerService {
         if (server.isEmpty()) {
             return;
         }
-        
+
         var userGuild = userGuildRepository.findByUserIdAndGuildServerId(userId, serverId);
-        if (!userGuild.isEmpty()){
+        if (!userGuild.isEmpty()) {
             userGuildRepository.delete(userGuild.get());
             server.get().setAmountPlayers((byte) (server.get().getAmountPlayers() - 1));
         }
-        
+
         if (server.get().getAmountPlayers() <= 0) {
             serverRepository.delete(server.get());
         } else {
@@ -135,6 +150,31 @@ public class ServerServiceImpl implements ServerService {
             }
             serverRepository.save(server.get());
         }
+    }
+
+    @Override
+    public Guild createGuild(Long serverId, Long userId, CreateGuildDto createGuildDto) {
+        var server = serverRepository.findById(serverId);
+        if (server.isEmpty()) {
+            return null;
+        }
+        var user = userRepository.findById(userId);
+        if (user.isEmpty()) {
+            return null;
+        }
+
+        var guild = guildRepository.save(createGuildMapper.toEntity(createGuildDto));
+
+        var userGuild = new UserGuild();
+        userGuild.setGuild(guild);
+        userGuild.setUser(user.get());
+        userGuildRepository.save(userGuild);
+        return guild;
+    }
+
+    @Override
+    public List<Guild> getGuilds(Long serverId) {
+        return guildRepository.findByServerId(serverId);
     }
 
 }
