@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.devgalan.tucofradia.dtos.guild.CreateGuildDto;
+import com.devgalan.tucofradia.dtos.guild.ViewGuildDto;
 import com.devgalan.tucofradia.models.Guild;
 import com.devgalan.tucofradia.models.Server;
 
@@ -39,6 +40,6 @@ public interface ServerService {
 
     Guild createGuild(Long serverId, Long userId, CreateGuildDto createGuildDto);
 
-    List<Guild> getGuilds(Long serverId);
+    List<ViewGuildDto> getGuilds(Long serverId);
 
 }

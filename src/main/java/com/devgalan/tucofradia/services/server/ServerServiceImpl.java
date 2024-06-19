@@ -7,7 +7,9 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import com.devgalan.tucofradia.dtos.guild.CreateGuildDto;
+import com.devgalan.tucofradia.dtos.guild.ViewGuildDto;
 import com.devgalan.tucofradia.mappers.guild.CreateGuildMapper;
+import com.devgalan.tucofradia.mappers.guild.ViewGuildMapper;
 import com.devgalan.tucofradia.models.Guild;
 import com.devgalan.tucofradia.models.Server;
 import com.devgalan.tucofradia.models.UserGuild;
@@ -29,13 +31,16 @@ public class ServerServiceImpl implements ServerService {
 
     private final CreateGuildMapper createGuildMapper;
 
+    private final ViewGuildMapper viewGuildMapper;
+
     public ServerServiceImpl(ServerRepository serverRepository, UserGuildRepository userGuildRepository,
-            UserRepository userRepository, GuildRepository guildRepository, CreateGuildMapper createGuildMapper) {
+            UserRepository userRepository, GuildRepository guildRepository, CreateGuildMapper createGuildMapper, ViewGuildMapper viewGuildMapper) {
         this.serverRepository = serverRepository;
         this.userGuildRepository = userGuildRepository;
         this.userRepository = userRepository;
         this.guildRepository = guildRepository;
         this.createGuildMapper = createGuildMapper;
+        this.viewGuildMapper = viewGuildMapper;
     }
 
     @Override
@@ -173,8 +178,17 @@ public class ServerServiceImpl implements ServerService {
     }
 
     @Override
-    public List<Guild> getGuilds(Long serverId) {
-        return guildRepository.findByServerId(serverId);
+    public List<ViewGuildDto> getGuilds(Long serverId) {
+        var guilds = guildRepository.findByServerId(serverId);
+        var viewGuilds = new ArrayList<ViewGuildDto>();
+        for (int i = 0; i < guilds.size(); i++) {
+            var userGuild = userGuildRepository.findByGuildId(guilds.get(i).getId());
+            if (userGuild.isEmpty()) {
+                continue;
+            }
+            viewGuilds.add(viewGuildMapper.toDto(guilds.get(i), userGuild.get().getUser()));
+        }
+        return viewGuilds;
     }
 
 }

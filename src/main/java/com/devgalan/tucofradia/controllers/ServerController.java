@@ -27,12 +27,15 @@ import com.devgalan.tucofradia.mappers.server.UpdateServerDto;
 import com.devgalan.tucofradia.mappers.server.ViewServerMapper;
 import com.devgalan.tucofradia.models.Server;
 import com.devgalan.tucofradia.services.server.ServerService;
+import com.devgalan.tucofradia.services.user.UserService;
 
 @RestController
 @RequestMapping("api/servers")
 public class ServerController {
 
     private final ServerService serverService;
+
+    private final UserService userService;
 
     private final CreateServerMapper createServerMapper;
 
@@ -41,11 +44,12 @@ public class ServerController {
     private final ViewGuildMapper viewGuildMapper;
 
     public ServerController(ServerService serverService,
-            CreateServerMapper createServerMapper, ViewServerMapper viewServerMapper, ViewGuildMapper viewGuildMapper) {
+            CreateServerMapper createServerMapper, ViewServerMapper viewServerMapper, ViewGuildMapper viewGuildMapper, UserService userService) {
         this.serverService = serverService;
         this.createServerMapper = createServerMapper;
         this.viewServerMapper = viewServerMapper;
         this.viewGuildMapper = viewGuildMapper;
+        this.userService = userService;
     }
 
     @GetMapping("")
@@ -180,13 +184,19 @@ public class ServerController {
     public ViewGuildDto createGuild(@PathVariable Long serverId, @PathVariable Long userId,
             @RequestBody CreateGuildDto createGuildDto) {
 
-        return viewGuildMapper.toDto(serverService.createGuild(serverId, userId, createGuildDto));
+        var user = userService.getUserById(userId);
+
+        if (user.isEmpty()) {
+            return null;
+        }
+
+        return viewGuildMapper.toDto(serverService.createGuild(serverId, userId, createGuildDto), user.get());
     }
 
     @GetMapping("{serverId}/guilds")
     public List<ViewGuildDto> getGuilds(@PathVariable Long serverId) {
 
-        return viewGuildMapper.toDto(serverService.getGuilds(serverId));
+        return serverService.getGuilds(serverId);
     }
 
 }
