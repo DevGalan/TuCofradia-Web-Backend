@@ -136,12 +136,14 @@ public class ServerServiceImpl implements ServerService {
             return;
         }
 
-        var userGuild = userGuildRepository.findByUserIdAndGuildServerId(userId, serverId);
+        var userGuilds = userGuildRepository.findByUserId(userId);
+        var userGuild = userGuilds.stream().filter(ug -> ug.getGuild().getServer().getId().equals(serverId)).findFirst();
+        
         if (!userGuild.isEmpty()) {
             userGuildRepository.delete(userGuild.get());
             server.get().setAmountPlayers((byte) (server.get().getAmountPlayers() - 1));
         }
-
+        
         if (server.get().getAmountPlayers() <= 0) {
             serverRepository.delete(server.get());
         } else {
@@ -161,20 +163,25 @@ public class ServerServiceImpl implements ServerService {
     public Guild createGuild(Long serverId, Long userId, CreateGuildDto createGuildDto) {
         var server = serverRepository.findById(serverId);
         if (server.isEmpty()) {
+            System.out.println("Server not found");
             return null;
         }
         var user = userRepository.findById(userId);
         if (user.isEmpty()) {
+            System.out.println("User not found");
             return null;
         }
 
-        var guild = guildRepository.save(createGuildMapper.toEntity(createGuildDto));
+        var guild = createGuildMapper.toEntity(createGuildDto);
+        guild.setServer(server.get());
 
         var userGuild = new UserGuild();
         userGuild.setGuild(guild);
         userGuild.setUser(user.get());
-        userGuildRepository.save(userGuild);
-        return guild;
+        userGuildRepository.save(userGuild).getId();
+        server.get().setAmountPlayers((byte) (server.get().getAmountPlayers() + 1));
+        serverRepository.save(server.get());
+        return userGuild.getGuild();
     }
 
     @Override

@@ -6,6 +6,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.sql.Date;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,25 +48,31 @@ public class UserControllerTest {
     @Value("${api.endpoint.base-url}/users")
     private String baseURL;
 
+    private List<User> users;
+
     private void registerUser(int userNumber, String gmailPrefix) {
         String userNumberStr = String.valueOf(userNumber);
         RegisterUserDto registerUserDto = new RegisterUserDto(
                 "User " + userNumberStr,
                 gmailPrefix + userNumberStr + "@gmail.com",
                 "password" + userNumberStr);
-        userController.register(registerUserDto);
+                userController.register(registerUserDto);
+                users.add(userRepository.findByEmail(gmailPrefix + userNumberStr + "@gmail.com").get());
     }
 
     @BeforeEach
     public void setUp() {
-        for (int i = 1; i <= 20; i++) {
+        users = new ArrayList<>();
+        for (int i = 1; i <= 5; i++) {
             registerUser(i, "user");
         }
     }
 
     @AfterEach
     public void tearDown() {
-        userRepository.deleteAll();
+        for (User user : users) {
+            userRepository.delete(user);
+        }
     }
 
     @Test
@@ -72,10 +80,10 @@ public class UserControllerTest {
     public void whenCallGetRandomUsers_thenReturnRandomUsers() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get(baseURL + "/random")
                 .with(httpBasic("user", "user"))
-                .param("limit", "8")
+                .param("limit", "4")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(8));
+                .andExpect(jsonPath("$.length()").value(4));
     }
 
     @Test
@@ -89,6 +97,7 @@ public class UserControllerTest {
         newUser.setLastLogin(new Date(System.currentTimeMillis()));
         newUser.setRegisterDate(new Date(System.currentTimeMillis()));
         var savedUser = userRepository.save(newUser);
+        users.add(savedUser);
         mockMvc.perform(MockMvcRequestBuilders.get(baseURL + "/{userId}", savedUser.getId())
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -149,6 +158,7 @@ public class UserControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(registerUserDto)))
                 .andExpect(status().isOk());
+        users.add(userRepository.findByEmail("test@example.com").get());
     }
 
     @Test
@@ -170,6 +180,8 @@ public class UserControllerTest {
         userController.register(registerUser).getBody();
 
         var user = userRepository.findByEmail(registerUser.getEmail()).get();
+
+        users.add(user);
 
         User updatedUser = new User();
 
@@ -217,6 +229,7 @@ public class UserControllerTest {
         newUser.setLastLogin(new Date(System.currentTimeMillis()));
         newUser.setRegisterDate(new Date(System.currentTimeMillis()));
         var savedUser = userRepository.save(newUser);
+        users.add(savedUser);
         mockMvc.perform(MockMvcRequestBuilders.delete(baseURL + "/{id}", savedUser.getId())
                 .with(httpBasic("user", "user"))
                 .contentType(MediaType.APPLICATION_JSON))

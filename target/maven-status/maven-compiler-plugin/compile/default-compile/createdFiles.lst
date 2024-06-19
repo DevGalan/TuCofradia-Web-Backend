@@ -10,9 +10,12 @@ com\devgalan\tucofradia\controllers\UserController.class
 com\devgalan\tucofradia\services\cloudinary\CloudinaryServiceImpl.class
 com\devgalan\tucofradia\configuration\CloudinaryConfiguration.class
 com\devgalan\tucofradia\dtos\user\NoPasswordUserDto.class
+com\devgalan\tucofradia\repositories\GuildRepository.class
+com\devgalan\tucofradia\dtos\guild\CreateGuildDto.class
 com\devgalan\tucofradia\controllers\ServerController.class
 com\devgalan\tucofradia\mappers\news\ViewNewsMapper.class
 com\devgalan\tucofradia\services\server\ServerService.class
+com\devgalan\tucofradia\repositories\UserGuildRepository.class
 com\devgalan\tucofradia\configuration\PasswordEncoderConfiguration.class
 com\devgalan\tucofradia\services\image\ImageUploaderServiceImpl.class
 com\devgalan\tucofradia\data\FileReader.class
@@ -29,6 +32,7 @@ com\devgalan\tucofradia\repositories\NewRepository.class
 com\devgalan\tucofradia\dtos\news\CreateNewsDto.class
 com\devgalan\tucofradia\services\cloudinary\CloudinaryService.class
 com\devgalan\tucofradia\models\ServerInvitation.class
+com\devgalan\tucofradia\mappers\guild\ViewGuildMapper.class
 com\devgalan\tucofradia\data\FileWriter.class
 com\devgalan\tucofradia\dtos\news\ViewNewsDto.class
 com\devgalan\tucofradia\models\Friendship.class
@@ -36,11 +40,14 @@ com\devgalan\tucofradia\dtos\server\JoinServerDto.class
 com\devgalan\tucofradia\repositories\UserRepository.class
 com\devgalan\tucofradia\mappers\server\ViewServerMapper.class
 com\devgalan\tucofradia\mappers\user\RegisterUserMapper.class
+com\devgalan\tucofradia\mappers\guild\CreateGuildMapper.class
+com\devgalan\tucofradia\mappers\server\UpdateServerDto.class
 com\devgalan\tucofradia\services\survey\SurveyService.class
 com\devgalan\tucofradia\models\News.class
 com\devgalan\tucofradia\tool\ResponseWithMessage.class
 com\devgalan\tucofradia\configuration\WebSecurityConfiguration.class
 com\devgalan\tucofradia\models\User.class
+com\devgalan\tucofradia\dtos\guild\ViewGuildDto.class
 com\devgalan\tucofradia\controllers\NewsController.class
 com\devgalan\tucofradia\models\ImageModel.class
 com\devgalan\tucofradia\models\SurveyAnswer.class
